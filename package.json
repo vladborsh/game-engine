@@ -1,0 +1,15 @@
+{
+  "name": "game-light",
+  "version": "1.0.0",
+  "description": "game loop",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vlad Borsh",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.18.8",
+    "gulp-livereload": "^3.8.1"
+  }
+}
