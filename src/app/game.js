@@ -3,16 +3,23 @@ window.onload = function() {
   g.addCursorGameObject(
     new e.Sprite(
       './assets/aim.png',
-      50, 50, 100, 20, 0
+      50, 50, 500, 20, 0, 4, true
     )
   );
   g.loop();
 
-  /*var img = new Image();
-  img.src = './assets/aim.png'
-  console.log(img);
-  img.onload = function() {
-    g.context.drawImage(img, 150, 150);
-  }*/
+  console.log(g.state);
+
+  g.addObject(
+    new e.GameObject(
+      100, 100,
+      function(vector, state) {
+        vector.x += (state.left) ? -10 : 0 + (state.right) ? 10 : 0;
+        vector.y += (state.top) ? -10 : 0 + (state.bottom) ? 10 : 0;
+        console.log(vector.x, vector.y );
+      },
+      g.state
+    )
+  )
   
 }
