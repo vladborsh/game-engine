@@ -3,7 +3,7 @@
 
   var Game = (function(){
     
-    function Game( w, h, gameStateCallback ) {
+    function Game( w, h) {
       this.canvas        = document.createElement("canvas"),
       this.canvas.width  = w || window.innerWidth;
       this.canvas.height = h || window.innerHeight;
@@ -11,7 +11,7 @@
       this.worldList     = [];
       this.screen        = new Screen( this.canvas.width, this.canvas.height );
       this.cursor        = new Cursor( this.screen.xCenter, this.screen.yCenter );
-      this.state         = new GameState( gameStateCallback );
+      this.state         = new GameState();
       this.cursor.setListener( this.canvas );
       document.body.insertBefore( this.canvas, document.body.childNodes[0] );
     }
@@ -45,7 +45,7 @@
           vector.x = self.cursor.getPosition().x;
           vector.y = self.cursor.getPosition().y;
         })
-      _cursor.setSprite(sprite);
+      _cursor.sprite = sprite;
       this.worldList.unshift(_cursor);
     }
 
@@ -62,7 +62,7 @@
    */
   var GameState = (function() {
     
-    function GameState( callback ) {
+    function GameState(  ) {
       var self = this;
       this.top = false;
       this.left = false;
@@ -75,7 +75,6 @@
           if ( e.keyCode == 65 ) self.left = true;
           if ( e.keyCode == 83 ) self.bottom = true;
           if ( e.keyCode == 68 ) self.right = true;
-          callback( self );
         }, false 
       );
       document.addEventListener( "keyup",
@@ -84,21 +83,19 @@
           if ( e.keyCode == 65 ) self.left = false;
           if ( e.keyCode == 83 ) self.bottom = false;
           if ( e.keyCode == 68 ) self.right = false;
-          callback( self );
         }, false 
       );
       document.addEventListener( "onmousedown", 
         function( e ) {
           self.mouseclick = true;
-          callback( self );
         }, false 
       );
       document.addEventListener( "onmouseup", 
         function( e ) {
           self.mouseclick = false;
-          callback( self );
         }, false
       );
+      document.addEventListener('contextmenu', event => event.preventDefault());
     }
 
     return GameState;
@@ -158,27 +155,20 @@
    */
   var GameObject = (function() {
 
-    function GameObject(x, y, conversion, gameState, sprite) {
+    function GameObject( x, y, conversion, gameState, sprite, controller ) {
       this.vector     = new a.Vector(x, y);
       this.conversion = conversion || (function(vector) { vector.translate(0, 0); });
       this.gameState  = gameState;
       this.sprite     = sprite;
-    }
-
-    GameObject.prototype.setConversionFuncion = function( func ) {
-      this.conversion = func
-    }
-
-    GameObject.prototype.setSprite = function( sprite ) {
-      this.sprite = sprite;
+      this.controller = controller;
     }
 
     GameObject.prototype.change = function() {
       if (this.sprite) this.sprite.next();
-      this.conversion(this.vector, this.gameState);
+      this.conversion(this.vector, this.gameState, this.controller);
     }
 
-    GameObject.prototype.draw = function(context, camera, isCursor) {
+    GameObject.prototype.draw = function( context, camera, isCursor ) {
       if (this.sprite) {
         this.sprite.draw(context, this.vector, camera, isCursor)
       }
@@ -194,14 +184,15 @@
    */
   var Camera = (function(){
 
-    function Camera( x, y, conversion, gameState ) {
+    function Camera( x, y, conversion, gameState, controller ) {
       this.vector = new a.Vector(x, y);
       this.conversion = conversion || (function(vector) { vector.translate(0, 0); });
       this.gameState  = gameState;
+      this.controller = controller;
     }
 
     Camera.prototype.change = function() {
-      this.conversion(this.vector, this.gameState);
+      this.conversion(this.vector, this.gameState, this.controller);
     }
 
     return Camera;
@@ -265,12 +256,75 @@
   }());
 
 
+  var Controller = (function () {
+
+    function Controller(v, a, state, accelerationBoost, maxVelocity, slipCoefficient) {
+      this.velocity = v;
+      this.acceleration = a;
+      this.gameState = state;
+      this.accelerationBoost = accelerationBoost;
+      this.maxVelocity = maxVelocity;
+      this.minVelocity = -maxVelocity;
+      this.slipCoefficient = slipCoefficient;
+    }
+
+    Controller.prototype.accelerate = function () {
+      if (this.gameState.left) {
+        this.acceleration.x = -this.accelerationBoost 
+      } else if (this.gameState.right) {
+        this.acceleration.x = this.accelerationBoost
+      } else {
+        this.acceleration.x = 0
+      }
+      if (this.gameState.top) {
+        this.acceleration.y = -this.accelerationBoost 
+      } else if (this.gameState.bottom) {
+        this.acceleration.y = this.accelerationBoost
+      } else {
+        this.acceleration.y = 0
+      }
+      this.velocity.x += 
+        ((this.velocity.x < this.maxVelocity) && (this.velocity.x > this.minVelocity) && this.gameState.right) 
+          ? this.acceleration.x : 0
+      this.velocity.x += 
+        ((this.velocity.x < this.maxVelocity) && (this.velocity.x > this.minVelocity) && this.gameState.left) 
+          ? this.acceleration.x : 0;
+      this.velocity.y += 
+        ((this.velocity.y < this.maxVelocity) && (this.velocity.y > this.minVelocity) && this.gameState.top) 
+          ? this.acceleration.y : 0
+      this.velocity.y += 
+        ((this.velocity.y < this.maxVelocity) && (this.velocity.y > this.minVelocity) && this.gameState.bottom) 
+          ? this.acceleration.y : 0;
+      return this.velocity;
+    }
+
+    Controller.prototype.slip = function () {
+      this.velocity.x -= 
+        (!this.gameState.right && this.velocity.x > 0) 
+          ? this.slipCoefficient : 0;
+      this.velocity.x -= 
+        (!this.gameState.left && this.velocity.x < 0) 
+          ? -this.slipCoefficient : 0;
+      this.velocity.y -= 
+        (!this.gameState.top && this.velocity.y < 0) 
+          ? -this.slipCoefficient : 0;
+      this.velocity.y -= 
+        (!this.gameState.bottom && this.velocity.y > 0) 
+          ? this.slipCoefficient : 0;
+    }
+
+    return Controller;
+
+  }())
+
+
   window.e = {
     Game        : Game,
     Camera      : Camera,
     Screen      : Screen,
     GameObject  : GameObject,
-    Sprite      : Sprite
+    Sprite      : Sprite,
+    Controller  : Controller
   }
 
 }());
