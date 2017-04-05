@@ -3,7 +3,7 @@
 
   var Game = (function(){
     
-    function Game( w, h ) {
+    function Game( w, h, gameStateCallback ) {
       this.canvas        = document.createElement("canvas"),
       this.canvas.width  = w || window.innerWidth;
       this.canvas.height = h || window.innerHeight;
@@ -11,8 +11,8 @@
       this.worldList     = [];
       this.screen        = new Screen( this.canvas.width, this.canvas.height );
       this.cursor        = new Cursor( this.screen.xCenter, this.screen.yCenter );
+      this.state         = new GameState( gameStateCallback );
       this.cursor.setListener( this.canvas );
-      this.state = new GameState();
       document.body.insertBefore( this.canvas, document.body.childNodes[0] );
     }
 
@@ -62,7 +62,7 @@
    */
   var GameState = (function() {
     
-    function GameState() {
+    function GameState( callback ) {
       var self = this;
       this.top = false;
       this.left = false;
@@ -75,6 +75,7 @@
           if ( e.keyCode == 65 ) self.left = true;
           if ( e.keyCode == 83 ) self.bottom = true;
           if ( e.keyCode == 68 ) self.right = true;
+          callback( self );
         }, false 
       );
       document.addEventListener( "keyup",
@@ -83,16 +84,19 @@
           if ( e.keyCode == 65 ) self.left = false;
           if ( e.keyCode == 83 ) self.bottom = false;
           if ( e.keyCode == 68 ) self.right = false;
+          callback( self );
         }, false 
       );
       document.addEventListener( "onmousedown", 
         function( e ) {
           self.mouseclick = true;
+          callback( self );
         }, false 
       );
       document.addEventListener( "onmouseup", 
         function( e ) {
           self.mouseclick = false;
+          callback( self );
         }, false
       );
     }
