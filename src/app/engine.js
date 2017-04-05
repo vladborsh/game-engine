@@ -19,15 +19,22 @@
     Game.prototype.loop = function () {
       var self = this;
       var loopId = setInterval(function() {
+        self.camera.change();
         self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
         for(var i = 0; i < self.worldList.length; i++) self.worldList[i].change();
-        for(var i = 0; i < self.worldList.length; i++) self.worldList[i].draw(self.context);
+        for(var i = 0; i < self.worldList.length; i++) {
+          self.worldList[i].draw(self.context, self.camera, i == self.worldList.length-1);
+        }
       }, 17);
       //clearInterval(loopId);
     }
 
     Game.prototype.addObject = function( obj ) {
-      this.worldList.push(obj);
+      this.worldList.unshift(obj);
+    }
+
+    Game.prototype.setCamera = function( camera ) {
+      this.camera = camera;
     }
 
     Game.prototype.addCursorGameObject = function( sprite ) {
@@ -39,7 +46,7 @@
           vector.y = self.cursor.getPosition().y;
         })
       _cursor.setSprite(sprite);
-      this.worldList.push(_cursor);
+      this.worldList.unshift(_cursor);
     }
 
     Game.prototype.setInputListener = function() {
@@ -68,7 +75,6 @@
           if ( e.keyCode == 65 ) self.left = true;
           if ( e.keyCode == 83 ) self.bottom = true;
           if ( e.keyCode == 68 ) self.right = true;
-          console.log(self);
         }, false 
       );
       document.addEventListener( "keyup",
@@ -77,7 +83,6 @@
           if ( e.keyCode == 65 ) self.left = false;
           if ( e.keyCode == 83 ) self.bottom = false;
           if ( e.keyCode == 68 ) self.right = false;
-          console.log(self);
         }, false 
       );
       document.addEventListener( "onmousedown", 
@@ -166,12 +171,12 @@
 
     GameObject.prototype.change = function() {
       if (this.sprite) this.sprite.next();
-      var newPos = this.conversion(this.vector, this.gameState);
+      this.conversion(this.vector, this.gameState);
     }
 
-    GameObject.prototype.draw = function(context, camera) {
+    GameObject.prototype.draw = function(context, camera, isCursor) {
       if (this.sprite) {
-        this.sprite.draw(context, this.vector, camera)
+        this.sprite.draw(context, this.vector, camera, isCursor)
       }
     }
 
@@ -185,9 +190,14 @@
    */
   var Camera = (function(){
 
-    function Camera( x, y, conversion ) {
+    function Camera( x, y, conversion, gameState ) {
       this.vector = new a.Vector(x, y);
-      this.conversion = conversion || (function(vector) { return vector.translate(0, 0); });
+      this.conversion = conversion || (function(vector) { vector.translate(0, 0); });
+      this.gameState  = gameState;
+    }
+
+    Camera.prototype.change = function() {
+      this.conversion(this.vector, this.gameState);
     }
 
     return Camera;
@@ -231,7 +241,7 @@
       }
     }
 
-    Sprite.prototype.draw = function(ctx, vector, camera) {
+    Sprite.prototype.draw = function(ctx, vector, camera, isCursor) {
       var self = this;
       ctx.drawImage(
         self.source, 
@@ -239,8 +249,8 @@
         0, 
         self.w, 
         self.h, 
-        vector.x - Math.round(self.w / 2), 
-        vector.y - Math.round(self.h / 2), 
+        vector.x - Math.round(self.w / 2) - (!isCursor ? camera.vector.x : 0), 
+        vector.y - Math.round(self.h / 2) - (!isCursor ? camera.vector.y : 0), 
         self.w, 
         self.h
       );

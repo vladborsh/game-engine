@@ -87,6 +87,12 @@
       this.y += dy;
     }
 
+
+    Vector.prototype.translateVec = function(vector) {
+      this.x += vector.x;
+      this.y += vector.y;
+    }
+
     Vector.prototype.rotate = function(a) {
       a = a * Math.PI / 180;
       this.x = x * Math.cos(a) - x * Math.sin(a);
