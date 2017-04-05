@@ -13,9 +13,9 @@
 
     Matrix.prototype.setTranslate = function(dx, dy) {
       this.el = [
-        [0, 0, dx], 
-        [0, 0, dy], 
-        [0, 0, 1]
+        [0, 0, 0], 
+        [0, 0, 0], 
+        [dx, dy, 1]
       ];
       return el;
     }
@@ -23,8 +23,8 @@
     Matrix.prototype.setRotation = function(a) {
       a = a * Math.PI / 180;
       this.el = [
-        [Math.cos(a), -Math.sin(a), 0], 
-        [Math.sin(a), Math.cos(a), 0], 
+        [Math.cos(a), Math.sin(a), 0], 
+        [-Math.sin(a), Math.cos(a), 0], 
         [0, 0, 1]
       ];
       return el;
@@ -87,16 +87,15 @@
       this.y += dy;
     }
 
-
     Vector.prototype.translateVec = function(vector) {
       this.x += vector.x;
       this.y += vector.y;
     }
 
-    Vector.prototype.rotate = function(a) {
+    Vector.prototype.rotateVec = function(a, vector) {
       a = a * Math.PI / 180;
-      this.x = x * Math.cos(a) - x * Math.sin(a);
-      this.y = y * Math.sin(a) + y * Math.sin(a);
+      this.x = x * Math.cos(a) - y * Math.sin(a) - vector.x * (Math.cos(a) - 1) + vector.y * Math.sin(a);
+      this.y = y * Math.sin(a) + y * Math.cos(a) - vector.y * (Math.cos(a) - 1) + vector.x * Math.sin(a);
     }
 
     return Vector;
