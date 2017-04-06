@@ -263,7 +263,6 @@
         dx = Math.cos(cursor.angle) * 50;
         dy = Math.sin(cursor.angle) * 50;
       }
-      //console.log(cursor.vector.y - camera.screen.center.x, cursor.vector.y - camera.screen.center.x)
       ctx.drawImage(
         self.source, 
         self.currentFrame * self.w, 
