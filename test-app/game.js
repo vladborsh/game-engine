@@ -6,7 +6,7 @@ window.onload = function() {
   g.addCursorGameObject(
     new e.Sprite(
       './assets/aim2.png',
-      100, 100, 300, 17, 0, 4, true
+      100, 100, 300, 0, 4, true
     )
   );
   g.cursor.rotationByCursor = true;
@@ -24,7 +24,7 @@ window.onload = function() {
       g.state,
       new e.Sprite(
         './assets/hero/hero.png',
-        120, 120, 400, 17, 0, 5, true
+        120, 120, 400, 0, 5, true
       ),
       new e.Controller(
         new a.Vector(0, 0),
@@ -91,7 +91,7 @@ window.onload = function() {
           g.state,
           new e.Sprite(
             './assets/bg_txt/txt0.png',
-            100, 100, 300, 17, 0, 0, true
+            100, 100, 300, 0, 0, true
           )
         )
       )
