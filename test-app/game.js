@@ -53,29 +53,11 @@ window.onload = function() {
         g.state,
         1,
         10,
-        0.5,
+        1,
         g.worldList[0].vector
       )
     )
   );
-
-
-  /* Screen center */
-  /*g.addObject(
-    new e.GameObject(
-      g.screen.xCenter,
-      g.screen.yCenter,
-      function(vector, state, controller) {
-        vector.x = g.camera.vector.x;
-        vector.y = g.camera.vector.y;
-      },
-      g.state,
-      new e.Sprite(
-        './assets/screen_id.png',
-        80, 80, 300, 17, 0, 0, true
-      )
-    )
-  )*/
 
   /* Set background */
   for (var x = 0; x < 20; x ++) {

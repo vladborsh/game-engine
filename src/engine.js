@@ -184,6 +184,7 @@
      */
     function Cursor(x, y, canvas) {
       this.vector = new a.Vector(x, y);
+      this.canvas = canvas;
       if (canvas) {
         this.setListener(canvas);
       }
@@ -196,7 +197,7 @@
      */
     Cursor.prototype.setListener = function() {
       var self = this;
-      canvas.addEventListener('mousemove', function(evt) {
+      self.canvas.addEventListener('mousemove', function(evt) {
         var rect = self.canvas.getBoundingClientRect();
         self.vector.x = evt.clientX - rect.left;
         self.vector.y = evt.clientY - rect.top;
@@ -361,8 +362,8 @@
       var self = this;
       var dx = 0, dy = 0;
       if (cursor.rotationByCursor && !isCursor) {
-        dx = Math.cos(cursor.angle) * 100;
-        dy = Math.sin(cursor.angle) * 100;
+        dx = Math.cos(cursor.angle) * 50;
+        dy = Math.sin(cursor.angle) * 50;
       }
       ctx.drawImage(
         self.source, 
@@ -406,7 +407,7 @@
       this.slipCoefficient   = slipCoefficient;
       this.prevVelocity      = v;
       this.linkedVec         = linkedVec;
-      this.ownVec            = new e.Vector(0, 0);
+      this.ownVec            = {x:0, y:0};
     }
 
     /**
