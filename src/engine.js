@@ -368,7 +368,6 @@
         dy = Math.sin(cursor.angle) * 50;
       }
       if (this.static) {
-        console.log('draw static')
         ctx.drawImage(
           self.source, 
           self.currentFrame * self.w, 
