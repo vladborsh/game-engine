@@ -6,10 +6,26 @@ window.onload = function() {
   g.addCursorGameObject(
     new e.Sprite(
       './assets/aim2.png',
-      100, 100, 300, 0, 4, true
+      100, 100, 300, 0, 4, true, false
     )
   );
   g.cursor.rotationByCursor = true;
+
+  
+
+  /* Filter */
+  g.addObject(
+    new e.GameObject(
+      g.screen.center.x, 
+      g.screen.center.y,
+      function(vector, state, controller) {},
+      g.state,
+      new e.Sprite(
+        './assets/filters/filter_1.png',
+        2000, 2000, 300, 0, 0, true, true
+      )
+    )
+  );
 
   /* Hero */
   g.addObject(
@@ -24,7 +40,7 @@ window.onload = function() {
       g.state,
       new e.Sprite(
         './assets/hero/hero.png',
-        120, 120, 400, 0, 5, true
+        120, 120, 400, 0, 5, true, false
       ),
       new e.Controller(
         new a.Vector(0, 0),
@@ -40,7 +56,8 @@ window.onload = function() {
 
   g.setCamera(
     new e.Camera(
-      0, 0,
+      g.screen.center.x,
+      g.screen.center.y,
       function(vector, state, controller) {
         controller.accelerate();
         controller.slip();
@@ -72,7 +89,7 @@ window.onload = function() {
           g.state,
           new e.Sprite(
             './assets/bg_txt/txt0.png',
-            100, 100, 300, 0, 0, true
+            100, 100, 300, 0, 0, true, false
           )
         )
       )

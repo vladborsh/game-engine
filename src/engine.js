@@ -312,8 +312,9 @@
      * @param {Integer} first frame index  
      * @param {Integer} amounf of frame in sprite
      * @param {Boolean} identificates that animation will reversed if current frame reach the limits
+     * @param {Boolean} image is unchanged by camera position
      */
-    function Sprite(source, w, h, duration, firstFrame, animationLength, bounce) {
+    function Sprite(source, w, h, duration, firstFrame, animationLength, bounce, static) {
       this.source               = new Image();
       this.source.src           = source;
       this.w                    = w;
@@ -326,6 +327,7 @@
       this.currentFrame         = this.firstFrame;
       this.reverse              = false;
       this.bounce               = bounce || false;
+      this.static               = static;
     }
 
     /**
@@ -365,17 +367,33 @@
         dx = Math.cos(cursor.angle) * 50;
         dy = Math.sin(cursor.angle) * 50;
       }
-      ctx.drawImage(
-        self.source, 
-        self.currentFrame * self.w, 
-        0, 
-        self.w, 
-        self.h, 
-        vector.x - Math.round(self.w / 2) - (!isCursor ? Math.round(camera.vector.x - camera.screen.w / 2) : 0) + dx, 
-        vector.y - Math.round(self.h / 2) - (!isCursor ? Math.round(camera.vector.y - camera.screen.h / 2) : 0) + dy, 
-        self.w, 
-        self.h
-      );
+      if (this.static) {
+        console.log('draw static')
+        ctx.drawImage(
+          self.source, 
+          self.currentFrame * self.w, 
+          0, 
+          self.w, 
+          self.h, 
+          vector.x - Math.round(self.w / 2), 
+          vector.y - Math.round(self.h / 2),
+          self.w, 
+          self.h
+        );
+      } else {
+        ctx.drawImage(
+          self.source, 
+          self.currentFrame * self.w, 
+          0, 
+          self.w, 
+          self.h, 
+          vector.x - Math.round(self.w / 2) - (!isCursor ? Math.round(camera.vector.x - camera.screen.w / 2) : 0) + dx, 
+          vector.y - Math.round(self.h / 2) - (!isCursor ? Math.round(camera.vector.y - camera.screen.h / 2) : 0) + dy, 
+          self.w, 
+          self.h
+        );
+      }
+      
     }
 
     return Sprite;
