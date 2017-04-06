@@ -40,7 +40,8 @@ window.onload = function() {
 
   g.setCamera(
     new e.Camera(
-      0, 0,
+      g.screen.center.x, 
+      g.screen.center.y,
       function(vector, state, controller) {
         controller.accelerate();
         controller.slip();
@@ -53,7 +54,7 @@ window.onload = function() {
         g.state,
         1,
         10,
-        0.5,
+        1,
         g.worldList[0].vector
       )
     )

@@ -260,8 +260,8 @@
       var self = this;
       var dx = 0, dy = 0;
       if (cursor.rotationByCursor && !isCursor) {
-        dx = Math.cos(cursor.angle) * 100;
-        dy = Math.sin(cursor.angle) * 100;
+        dx = Math.cos(cursor.angle) * 50;
+        dy = Math.sin(cursor.angle) * 50;
       }
       //console.log(cursor.vector.y - camera.screen.center.x, cursor.vector.y - camera.screen.center.x)
       ctx.drawImage(
