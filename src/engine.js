@@ -1,6 +1,6 @@
 ;(function() {
 
-  var INTERVAL = 17;
+  var INTERVAL = 18;
 
   /**
    * Represents main game object. This object runs main game loop. This object
@@ -313,8 +313,9 @@
      * @param {Integer} amounf of frame in sprite
      * @param {Boolean} identificates that animation will reversed if current frame reach the limits
      * @param {Boolean} image is unchanged by camera position
+     * @param {Integer} altitude identify camera object translation according to camera (Outlook)
      */
-    function Sprite(source, w, h, duration, firstFrame, animationLength, bounce, static) {
+    function Sprite(source, w, h, duration, firstFrame, animationLength, bounce, static, altitude) {
       this.source               = new Image();
       this.source.src           = source;
       this.w                    = w;
@@ -328,6 +329,7 @@
       this.reverse              = false;
       this.bounce               = bounce || false;
       this.static               = static;
+      this.altitude             = altitude;
     }
 
     /**
@@ -364,34 +366,48 @@
       var self = this;
       var dx = 0, dy = 0;
       if (cursor.rotationByCursor && !isCursor) {
-        dx = Math.cos(cursor.angle) * 50;
-        dy = Math.sin(cursor.angle) * 50;
+        dx = Math.cos(cursor.angle) * 20;
+        dy = Math.sin(cursor.angle) * 20;
       }
-      if (this.static) {
-        ctx.drawImage(
-          self.source, 
-          self.currentFrame * self.w, 
-          0, 
-          self.w, 
-          self.h, 
-          vector.x - Math.round(self.w / 2), 
-          vector.y - Math.round(self.h / 2),
-          self.w, 
-          self.h
-        );
-      } else {
-        ctx.drawImage(
-          self.source, 
-          self.currentFrame * self.w, 
-          0, 
-          self.w, 
-          self.h, 
-          vector.x - Math.round(self.w / 2) - (!isCursor ? Math.round(camera.vector.x - camera.screen.w / 2) : 0) + dx, 
-          vector.y - Math.round(self.h / 2) - (!isCursor ? Math.round(camera.vector.y - camera.screen.h / 2) : 0) + dy, 
-          self.w, 
-          self.h
-        );
-      }
+      ctx.drawImage(
+        self.source, 
+        self.currentFrame * self.w, 
+        0, 
+        self.w, 
+        self.h, 
+        vector.x 
+          - Math.round(self.w / 2) 
+          - ((!this.static) 
+            ? (
+              ((!isCursor 
+                ? Math.round(camera.vector.x - camera.screen.w / 2) 
+                : 0
+              ) + dx) 
+              * ((self.altitude) 
+                ? self.altitude 
+                : 1
+                )
+              ) 
+            : 0
+          ), 
+        vector.y 
+          - Math.round(self.h / 2) 
+          - ((!this.static) 
+            ? (
+              ((!isCursor 
+                ? Math.round(camera.vector.y - camera.screen.h / 2) 
+                : 0
+              ) + dy) 
+              * ((self.altitude) 
+                ? self.altitude 
+                : 1
+                )
+              ) 
+            : 0
+          ), 
+        self.w, 
+        self.h
+      ); 
       
     }
 
