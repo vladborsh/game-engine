@@ -439,6 +439,13 @@
       this.velocity.y += 
         ((this.velocity.y < this.maxVelocity) && (this.velocity.y > this.minVelocity)) 
           ? this.acceleration.y : 0;
+      /* Set velocity to max if maximum was exceeded */
+      this.velocity.x = (this.velocity.x > this.maxVelocity) ? this.maxVelocity : this.velocity.x;
+      this.velocity.y = (this.velocity.y > this.maxVelocity) ? this.maxVelocity : this.velocity.y;
+      /* Set velocity to min if minimum was exceeded */
+      this.velocity.x = (this.velocity.x < this.minVelocity) ? this.minVelocity : this.velocity.x;
+      this.velocity.y = (this.velocity.y < this.minVelocity) ? this.minVelocity : this.velocity.y;
+      
       this.absoluteStopMinVelocity()
       this.prevVelocity.x = this.velocity.x;
       this.prevVelocity.y = this.velocity.y;
