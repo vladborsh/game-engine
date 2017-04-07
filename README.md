@@ -8,7 +8,7 @@ In addition, standard engine functionality includes ability to create linking be
 
 The demo contain simple top-down shooter game
 
-*[dark-space](https://vladborsh.github.io/)
+* [dark-space](https://vladborsh.github.io/)
 
 ## Usage
 
