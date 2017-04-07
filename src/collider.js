@@ -2,7 +2,7 @@
 
   /**
    * Represents object that stores solid bodies list.
-   * Implements SAP collision detection alorithm
+   * Implements SAP collision detection algorithm
    */
   var Collider = (function() {
 
@@ -24,7 +24,7 @@
     /**
      * Collision detection
      */
-    Collider.prototype.sap = function() {
+    Collider.prototype.run = function() {
       this.sort();
       this.validate()
     }
@@ -131,10 +131,13 @@
       }
     }
 
+    /**
+     * Check collision (overlapping)
+     * @param  {SolidBody} next body in array
+     * @return {Boolean}
+     */
     SolidBody.prototype.validate = function( body ) {
-      var result = (this.max.x >= body.min.x && this.max.y >= body.min.y)
-       && (this.min.y < body.min.y)
-      return result;
+      return (this.max.x >= body.min.x && this.max.y >= body.min.y && this.min.y <= body.max.y)
     }
 
     return SolidBody;
