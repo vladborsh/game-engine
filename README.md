@@ -6,7 +6,7 @@ In addition, standard engine functionality includes ability to create linking be
 
 ## Demos
 
-The demo contain simple top-down shooter game
+The demo contains simple top-down shooter game
 
 * [dark-space](https://vladborsh.github.io/)
 
@@ -21,7 +21,7 @@ g.loop();
 
 Creating full screen canvas
 
-### Add new onjects
+### Add new objects
 
 ```js
 g.addObject(
@@ -49,9 +49,9 @@ g.addObject(
   )
 );
 ```
-Create new object with pre-installed sprite object and controller
+Create new object with pre-installed sprite and controller
 
-###Set camera 
+### Set camera 
 
 ```js
 g.setCamera(
