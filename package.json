@@ -4,7 +4,7 @@
   "description": "game loop",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start karma.conf.js --single-run"
   },
   "author": "Vlad Borsh",
   "license": "ISC",
@@ -14,7 +14,11 @@
     "gulp-clean": "^0.3.2",
     "gulp-concat": "^2.6.1",
     "gulp-livereload": "^3.8.1",
-    "gulp-minify": "0.0.15"
+    "gulp-minify": "0.0.15",
+    "karma": "^1.6.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.0.1",
+    "karma-jasmine": "^1.1.0"
   },
   "repository": {
     "type": "git",
