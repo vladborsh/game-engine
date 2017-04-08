@@ -19,12 +19,13 @@
       this.canvas.width  = w || window.innerWidth;
       this.canvas.height = h || window.innerHeight;
       this.context       = this.canvas.getContext("2d");
-      this.worldList     = [];
+      this.world         = [];
       this.screen        = new Screen( this.canvas.width, this.canvas.height );
       this.cursor        = new Cursor( this.screen.center.x, this.screen.center.y, this.canvas  );
       this.state         = new GameState();
       this.cursor.setListener();
       document.body.insertBefore( this.canvas, document.body.childNodes[0] );
+      setupIcon();
     }
 
     /**
@@ -39,14 +40,14 @@
         self.camera.change();
         self.calculateCursorAngle();
         self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
-        for(var i = 0; i < self.worldList.length; i++) {
-          self.worldList[i].change();
+        for(var i = 0; i < self.world.length; i++) {
+          self.world[i].change();
         }
-        for(var i = 0; i < self.worldList.length; i++) {
-          self.worldList[i].draw(
+        for(var i = 0; i < self.world.length; i++) {
+          self.world[i].draw(
             self.context, 
             self.camera, 
-            i == self.worldList.length-1, 
+            i == self.world.length-1, 
             self.cursor
           );
         }
@@ -58,7 +59,7 @@
      * @param {GameObject} new game object
      */
     Game.prototype.addObject = function( obj ) {
-      this.worldList.unshift(obj);
+      this.world.unshift(obj);
     }
 
     /**
@@ -94,7 +95,17 @@
           vector.y = self.cursor.getPosition().y;
         })
       _cursor.sprite = sprite;
-      this.worldList.unshift(_cursor);
+      this.world.unshift(_cursor);
+    }
+
+    /* Private functions */
+
+    function setupIcon(argument) {
+      var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+      link.type = 'image/x-icon';
+      link.rel = 'shortcut icon';
+      link.href = 'https://puu.sh/vdJf9/0aaeac54da.png';
+      document.getElementsByTagName('head')[0].appendChild(link);
     }
 
     return Game;
@@ -230,7 +241,7 @@
      * @param {Integer} x position
      * @param {Integer} y position
      * @param {Function} conversion function, should accept vector, game state, controller
-     * @param {GameState} referrence to current game state (that stores in main object)
+     * @param {GameState} reference to current game state (that stores in main object)
      * @param {Sprite} sprite object
      * @param {Controller} controller object
      */
@@ -550,16 +561,121 @@
 
     return Controller;
 
-  }())
+  }());
+
+  /**
+   * Representation of media storage in main game object.
+   * It is storing images and return images from storage by key , storage can be oranized by folders.
+   * Image (or folder) can be removed on demand
+   */
+  var MediaStorage = (function () {
+    
+    /**
+     * Constructor
+     * @param {Game} reference to Game object
+     */
+    function MediaStorage( game ) {
+      this.game = game;
+      this.storage = {};
+    }
+
+    /**
+     * Adding new record for media object to storage or in folder if folder is fpecified
+     * Record contains Image object and array of indexes. By that indexes can be finded game objects in world list
+     * (it is needed for memory releasing)
+     * @param {String} key in storage or in folder
+     * @param {String} source location
+     * @param {String} folder name
+     * @return {String}
+     */
+    MediaStorage.prototype.add = function( key, src, folder ) {
+      var img = new Image();
+      img.src = src;
+      var record = {
+        item       : img,
+        references : []
+      };
+      if (folder) {
+        if (!this.storage[folder]) this.storage[folder] = {};
+        this.storage[folder][key] = record;
+        return this.storage[folder][key];
+      } else {
+        this.storage[key] = record;
+        return this.storage[key];
+      }
+    }
+
+    /**
+     * Removing media objects from storage or from folder by key. If storage contains folder with specified key, 
+     * all records from folder will be deleted. Removing occurs by pass through array of indexes and invoking
+     * 'removeSprite' method in game object with this index
+     * @param  {String} key in storage
+     * @param  {String} folder name in storage
+     * @return {String}
+     */
+    MediaStorage.prototype.remove = function( key, folder ) {
+      if (folder) {
+        for (var i = 0; i < this.storage[folder][key].references.length; i++) {
+          this.game.world[this.storage[folder][key].references[i]].removeSprite(key);
+        }
+        this.storage[folder][key] = undefined;
+      } else {
+        if (this.storage[key] instanceof Object) {
+          for (var j in this.storage[key]) {
+            this.remove( j, key );
+          }
+        } else {
+          for (var i = 0; i < this.storage[key].references.length; i++) {
+            this.game.world[this.storage[key].references[i]].removeSprite(key);
+          }
+        }
+        this.storage[key] = undefined;
+      }
+      return key;
+    }
+
+    /**
+     * Cleaning of all storage by pass through map and remove by key. If object is folder, before removing 
+     * of folder all inner records will be removed
+     */
+    MediaStorage.prototype.clean = function() {
+      for (var key in this.storage) {
+        this.remove(key);
+      }
+    }
+
+    /**
+     * Geting image object from storage or from floder by key
+     * @param  {String} key in storage
+     * @param  {Integer} index of game object in world list
+     * @param  {String} folder name in storage
+     * @return {Image}
+     */
+    MediaStorage.prototype.get = function( key, gameObjectIndex, folder ) {
+      if (folder) {
+        this.storage[folder][key].references.push(gameObjectIndex);
+        return this.storage[folder][key].item;
+      } else {
+        if (!(this.storage[key] instanceof Object)) {
+          this.storage[key].references.push(gameObjectIndex);
+          return this.storage[key].item;
+        }
+      }
+    }
+    
+    return MediaStorage;
+
+  }());
 
 
   window.e = {
-    Game        : Game,
-    Camera      : Camera,
-    Screen      : Screen,
-    GameObject  : GameObject,
-    Sprite      : Sprite,
-    Controller  : Controller
+    Game         : Game,
+    Camera       : Camera,
+    Screen       : Screen,
+    GameObject   : GameObject,
+    Sprite       : Sprite,
+    Controller   : Controller,
+    MediaStorage : MediaStorage
   }
 
 }());
