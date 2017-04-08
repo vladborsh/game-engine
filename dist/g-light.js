@@ -278,6 +278,7 @@
      * @param {Integer} height of canvas
      */
     function Game( w, h ) {
+      this.mediaStorage  = new MediaStorage(this);
       this.canvas        = document.createElement("canvas"),
       this.canvas.width  = w || window.innerWidth;
       this.canvas.height = h || window.innerHeight;
@@ -356,8 +357,10 @@
         function(vector) {
           vector.x = self.cursor.getPosition().x;
           vector.y = self.cursor.getPosition().y;
-        })
-      _cursor.sprite = sprite;
+        },
+        undefined,
+        sprite
+      );
       this.world.unshift(_cursor);
     }
 
@@ -509,32 +512,33 @@
      * @param {Controller} controller object
      */
     function GameObject( x, y, conversion, gameState, sprite, controller ) {
-      this.vector     = new a.Vector(x, y);
-      this.conversion = conversion || (function(vector) { vector.translate(0, 0); });
-      this.gameState  = gameState;
-      this.sprite     = sprite;
-      this.controller = controller;
+      this.vector        = new a.Vector(x, y);
+      this.conversion    = conversion || (function(vector) { vector.translate(0, 0); });
+      this.gameState     = gameState;
+      this.sprites       = [sprite]
+      this.currentSprite = 0;
+      this.controller    = controller;
       if (this.controller) this.controller.ownVec = this.vector;
     }
 
     /**
-     * Invoke conversion function and call next frame in sprite object
+     * Invoke conversion function
      */
     GameObject.prototype.change = function() {
-      if (this.sprite) this.sprite.next();
       this.conversion(this.vector, this.gameState, this.controller);
     }
 
     /**
-     * If sprite is setted call draw function from them
+     * If sprite is setted call draw function from them, call next frame in sprite object
      * @param  {Context} reference to context object
      * @param  {Camera} reference to camera object
      * @param  {Boolean} identification that it is cursor object
      * @param  {Cursor} reference to cursor objject
      */
     GameObject.prototype.draw = function( context, camera, isCursor, cursor ) {
-      if (this.sprite) {
-        this.sprite.draw(context, this.vector, camera, isCursor, cursor)
+      if (this.sprites[this.currentSprite]) {
+        this.sprites[this.currentSprite].draw(context, this.vector, camera, isCursor, cursor);
+        this.sprites[this.currentSprite].next();
       }
     }
 
@@ -594,8 +598,7 @@
      * @param {Integer} altitude identify camera object translation according to camera (Outlook)
      */
     function Sprite(source, w, h, duration, firstFrame, animationLength, bounce, static, altitude) {
-      this.source               = new Image();
-      this.source.src           = source;
+      this.source               = source;
       this.w                    = w;
       this.h                    = h;
       this.duration             = duration;
@@ -642,6 +645,7 @@
      */
     Sprite.prototype.draw = function(ctx, vector, camera, isCursor, cursor) {
       var self = this;
+      if (!self.source) return;
       var dx = 0, dy = 0;
       if (cursor.rotationByCursor && !isCursor) {
         dx = Math.cos(cursor.angle) * 20;
@@ -919,7 +923,7 @@
         this.storage[folder][key].references.push(gameObjectIndex);
         return this.storage[folder][key].item;
       } else {
-        if (!(this.storage[key] instanceof Object)) {
+        if (this.storage[key].references) {
           this.storage[key].references.push(gameObjectIndex);
           return this.storage[key].item;
         }

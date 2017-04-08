@@ -1,7 +1,6 @@
 # GLight
 
-![Icon](https://puu.sh/vdJPP/fafe6696dc.png)
-
+![Icon](https://puu.sh/vdMzZ/f68b94cf4c.png)
 GLight is a light-weight javascript 2d game engine with support of rendering, collision detection, resource management. Collision detection is based on an optimized SAP algorithm implemetation. Main game loops can be switched in according to current game stage
 
 In addition, standard engine functionality includes ability to create linking between objects for subscription or creation dependent conversion (change inner state by parameters) function
@@ -25,6 +24,17 @@ g.loop();
 
 Creating full screen canvas
 
+### Loading data to media storage 
+
+```js
+  g.mediaStorage.add( 'aim',    './assets/aim2.png'             );
+  g.mediaStorage.add( 'filter', './assets/filters/filter_1.png' );
+  g.mediaStorage.add( 'hero',   './assets/hero/hero.png'        );
+  g.mediaStorage.add( 'txt',    './assets/bg_txt/txt0.png'      );
+```
+
+Files are stored by key-value or key-folder pairs. By getting single item should be provided game object index in world list (this is memory management requirements and prevent memory leak after removal)
+
 ### Add new objects
 
 ```js
@@ -39,7 +49,7 @@ g.addObject(
     },
     g.state,
     new e.Sprite(
-      './assets/hero/hero.png',
+      g.mediaStorage.get('hero', g.world.length),
       120, 120, 400, 0, 5, true, false
     ),
     new e.Controller(
