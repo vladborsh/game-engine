@@ -2,7 +2,7 @@
 
 ![Icon](https://puu.sh/vdJPP/fafe6696dc.png)
 
-GLight is a light-weight javascript 2d game engine with support of rendering, collision detection, resource management. Collision detection is based on an optimized SAP algorithm implemetation. Main game loops can be switched in accordins to current game stage
+GLight is a light-weight javascript 2d game engine with support of rendering, collision detection, resource management. Collision detection is based on an optimized SAP algorithm implemetation. Main game loops can be switched in according to current game stage
 
 In addition, standard engine functionality includes ability to create linking between objects for subscription or creation dependent conversion (change inner state by parameters) function
 
