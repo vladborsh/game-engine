@@ -4,6 +4,8 @@ GLight is a light-weight javascript game engine with support for rendering, coll
 
 In addition, standard engine functionality includes ability to create linking between objects for subscription or creation dependent conversion (change inner state by parameters) function
 
+[![Build Status](https://travis-ci.org/vladborsh/game-light.svg?branch=master)](https://travis-ci.org/vladborsh/game-light)
+
 ## Demos
 
 The demo contains simple top-down shooter game

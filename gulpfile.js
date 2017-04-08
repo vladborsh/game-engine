@@ -1,18 +1,27 @@
-var gulp        = require('gulp');
-var browserSync = require('browser-sync').create();
-var reload      = browserSync.reload;
+var gulp = require('gulp');
+var concat = require('gulp-concat');
+var minify = require('gulp-minify');
+var clean = require('gulp-clean');
 
-// Save a reference to the `reload` method
+gulp.task('clean', function() {
+  return gulp.src('dist/*', {read: false})
+    .pipe(clean());
+})
 
-// Watch scss AND html files, doing different things with each.
-gulp.task('serve', function () {
+gulp.task('concat', ['clean'], function() {
+  return gulp.src('src/*.js')
+    .pipe(concat('g-light.js'))
+    .pipe(gulp.dest('dist'));
+})
 
-    // Serve files from the root of this project
-    browserSync.init({
-        server: {
-            baseDir: "./srs/app"
-        }
-    });
-
-    gulp.watch("*.js").on("change", reload);
+gulp.task('minify', ['concat'], function() {
+  return gulp.src('dist/*.js')
+    .pipe(minify({
+      ext:{
+        min:'.min.js'
+      }
+    }))
+    .pipe(gulp.dest('dist'))
 });
+
+gulp.task('default', ['clean', 'concat', 'minify']);

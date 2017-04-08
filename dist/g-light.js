@@ -1,3 +1,266 @@
+;(function () {
+
+
+  var Matrix = (function () {
+
+    function Matrix( el ) {
+      this.el = el || [
+        [0, 0, 0], 
+        [0, 0, 0], 
+        [0, 0, 0]
+      ];
+    }
+
+    Matrix.prototype.setTranslate = function(dx, dy) {
+      this.el = [
+        [0, 0, 0], 
+        [0, 0, 0], 
+        [dx, dy, 1]
+      ];
+      return el;
+    }
+
+    Matrix.prototype.setRotation = function(a) {
+      a = a * Math.PI / 180;
+      this.el = [
+        [Math.cos(a), Math.sin(a), 0], 
+        [-Math.sin(a), Math.cos(a), 0], 
+        [0, 0, 1]
+      ];
+      return el;
+    }
+
+    Matrix.prototype.mult = function( el ) {
+      if (typeof el === 'Matrix') {
+        var ar = []
+        for (var i = 0; i < this.el.length; i++) {
+          var ar2 = []
+          for (var j = 0; j < el[0].length; j++) {
+            var item = 0;
+            for (var m = 0; m < this.el[0].length; m++) {
+              item += this.el[i][m] * el[m][j];
+            }
+            ar2.push(item);
+          }
+          ar.push(ar2);
+        }
+        return new Matrix(ar);
+      } else if (typeof el === 'Vector') {
+        var ar = []
+        for (var i = 0; i < this.el.length; i++) {
+          var item = 0;
+          for (var m = 0; m < this.el[0].length; m++) {
+            item += this.el[i][m] * el[m];
+          }
+          ar.push(item);
+        }
+        return new Matrix(ar);
+      }
+    } 
+
+    return Matrix;
+
+  }());
+
+
+  var Vector = (function () {
+    function Vector(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    Vector.prototype.exportArray = function () {
+      return [ this.x, this.y ];
+    }
+
+    Vector.prototype.exportArrayAffine = function () {
+      return [ this.x, this.y, 1 ];
+    }
+
+    Vector.prototype.importArray = function (arr) {
+      this.x = arr[0];
+      this.y = arr[1];
+    }
+
+    Vector.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+    }
+
+    Vector.prototype.translateVec = function(vector) {
+      this.x += vector.x;
+      this.y += vector.y;
+    }
+
+    Vector.prototype.rotateVec = function(a, vector) {
+      a = a * Math.PI / 180;
+      this.x = x * Math.cos(a) - y * Math.sin(a) - vector.x * (Math.cos(a) - 1) + vector.y * Math.sin(a);
+      this.y = y * Math.sin(a) + y * Math.cos(a) - vector.y * (Math.cos(a) - 1) + vector.x * Math.sin(a);
+    }
+
+    return Vector;
+
+  }());
+
+
+  window.a = {
+    Matrix : Matrix,
+    Vector : Vector
+  }
+
+}());
+;(function() {
+
+  /**
+   * Represents object that stores solid bodies list.
+   * Implements SAP collision detection algorithm
+   */
+  var Collider = (function() {
+
+    /**
+     * Constructor
+     */
+    function Collider() {
+      this.objects = [];
+    }
+
+    /**
+     * Add new solid body to array
+     * @param {SolidBody} body object
+     */
+    Collider.prototype.add = function( body ) {
+      this.objects.push(body);
+    }
+
+    /**
+     * Collision detection
+     */
+    Collider.prototype.run = function() {
+      this.sort();
+      this.validate()
+    }
+
+    /**
+     * Sort solid body objects (Merge sort)
+     */
+    Collider.prototype.sort = function() {
+      this.objects = internalSort(this.objects);
+    }
+
+    /**
+     * Validate every object to collision
+     */
+    Collider.prototype.validate = function() {
+      for(var i = 0; i < this.objects.length; i++) {
+        var overlaping = true;
+        var nextToValidate = i;
+        while (overlaping) {
+          if (nextToValidate+1 >= this.objects.length ) break;
+          overlaping = this.objects[i].validate(this.objects[nextToValidate+1]);
+          if (overlaping) {
+            this.objects[i].collided = true;
+            this.objects[nextToValidate+1].collided = true;
+          }
+          nextToValidate += 1;
+        }
+      }
+    }
+
+    /**
+     * Merge sort
+     * @param  {Array<SolidBody>} solid body array
+     * @return {Array<SolidBody>}
+     */
+    function internalSort( objects ) {
+      if (objects.length < 2) {
+        return objects;
+      }
+      var middle = Math.floor(objects.length / 2);
+      var leftRange = objects.slice(0, middle);
+      var rightRange = objects.slice(middle, objects.length);
+      var mergingResult = merge( internalSort( leftRange ), internalSort( rightRange ) );
+      return mergingResult;
+    }
+
+    /**
+     * Merge left and right parts of array
+     * @param  {Array<SolidBody>} left part of array 
+     * @param  {Array<SolidBody>} right part of array
+     * @return {Array<SolidBody>}
+     */
+    function merge( left, right ) {
+      var res = [];
+      while (left.length > 0 && right.length > 0) {                
+        if (left[0].compare(right[0]) == -1) {
+          res.push(left.shift());
+        } else {
+          res.push(right.shift());
+        }                                              
+      }            
+      while (left.length > 0) {                
+        res.push(left.shift());
+      }            
+      while (right.length > 0) {            
+        res.push(right.shift());
+      }
+      return res;
+    }
+
+    return Collider;
+
+  }())
+
+  /**
+   * Represents solid body boundaies as 2 vectors
+   */
+  var SolidBody = (function() {
+
+    /**
+     * Constructor
+     * @param {Vector} min vector (top left corner)
+     * @param {Vector} max vector (right bottom corner)
+     * @param {String} some is [optional]
+     */
+    function SolidBody( min, max, id ) {
+      this.min = min || {x: 0, y: 0};
+      this.max = max || {x: 0, y: 0};
+      this.id = id;
+    }
+
+    /**
+     * Compares with other body
+     * @param  {SolidBody} solid body
+     * @return {Integer} 
+     */
+    SolidBody.prototype.compare = function( body ) {
+      if (this.min.x < body.min.x || (this.min.x == body.min.x && this.min.y < body.min.y)) {
+        return -1;
+      } else if (this.min.x == body.min.x && this.min.y == body.min.y) {
+        return 0;
+      } else if (this.min.x > body.min.x || this.min.y > body.min.y) {
+        return 1;
+      }
+    }
+
+    /**
+     * Check collision (overlapping)
+     * @param  {SolidBody} next body in array
+     * @return {Boolean}
+     */
+    SolidBody.prototype.validate = function( body ) {
+      return (this.max.x >= body.min.x && this.max.y >= body.min.y && this.min.y <= body.max.y)
+    }
+
+    return SolidBody;
+
+  }());
+
+  window.c = {
+    Collider  : Collider,
+    SolidBody : SolidBody
+  };
+
+}());
 ;(function() {
 
   var INTERVAL = 18;
