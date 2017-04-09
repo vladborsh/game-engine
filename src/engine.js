@@ -20,10 +20,11 @@
       this.canvas.width  = w || window.innerWidth;
       this.canvas.height = h || window.innerHeight;
       this.context       = this.canvas.getContext("2d");
-      this.world         = [];
+      this.world         = [[]];
       this.screen        = new Screen( this.canvas.width, this.canvas.height );
       this.cursor        = new Cursor( this.screen.center.x, this.screen.center.y, this.canvas  );
       this.state         = new GameState();
+      this.gameStage     = 0;
       this.cursor.setListener();
       document.body.insertBefore( this.canvas, document.body.childNodes[0] );
       setupIcon();
@@ -38,29 +39,44 @@
     Game.prototype.loop = function () {
       var self = this;
       var loopId = setInterval(function() {
+        self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
         self.camera.change();
         self.calculateCursorAngle();
-        self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
-        for(var i = 0; i < self.world.length; i++) {
-          self.world[i].change();
+        self.cursorGameObject.change();
+        for(var i = 0; i < self.world[self.gameStage].length; i++) {
+          self.world[self.gameStage][i].change();
         }
-        for(var i = 0; i < self.world.length; i++) {
-          self.world[i].draw(
+        for(var i = 0; i < self.world[self.gameStage].length; i++) {
+          self.world[self.gameStage][i].draw(
             self.context, 
             self.camera, 
-            i == self.world.length-1, 
+            false, 
             self.cursor
           );
         }
+        self.cursorGameObject.draw(
+          self.context,
+          self.camera, 
+          true, 
+          self.cursor
+        );
       }, INTERVAL);
     }
 
     /**
      * Add new game object in the beggining of game world array. Object that has beeing added later will be drawn below
      * @param {GameObject} obj - reference to new game object
+     * @param {Integer}    gameStage - gameStageIndex
      */
-    Game.prototype.addObject = function( obj ) {
-      this.world.unshift(obj);
+    Game.prototype.addObject = function( obj, gameStage ) {
+      if (gameStage) {
+        if (!this.world[gameStage]) this.world[gameStage] = [];
+        this.world[gameStage].unshift(obj);
+      } else {
+        if (!this.world[0]) this.world[0] = [];
+        this.world[0].unshift(obj);
+      }
+
     }
 
     /**
@@ -98,7 +114,7 @@
         undefined,
         sprite
       );
-      this.world.unshift(_cursor);
+      this.cursorGameObject = _cursor;
     }
 
     /* Private functions */
@@ -200,7 +216,7 @@
      * @param {Integer} y - position
      * @param {Canvas}  canvas - reference to canvas object
      */
-    function Cursor(x, y, canvas) {
+    function Cursor( x, y, canvas ) {
       this.vector = new a.Vector(x, y);
       this.canvas = canvas;
       if (canvas) {
@@ -254,16 +270,18 @@
       this.conversion    = conversion || (function(vector) { vector.translate(0, 0); });
       this.gameState     = gameState;
       this.sprites       = [sprite]
-      this.currentSprite = 0;
       this.controller    = controller;
       if (this.controller) this.controller.ownVec = this.vector;
+      this.innerState = {
+        currentSprite : 0
+      }
     }
 
     /**
      * Invoke conversion function
      */
     GameObject.prototype.change = function() {
-      this.conversion(this.vector, this.gameState, this.controller);
+      this.conversion(this.vector, this.gameState, this.controller, this.innerState);
     }
 
     /**
@@ -274,9 +292,9 @@
      * @param  {Cursor}  cursor - reference to cursor objject
      */
     GameObject.prototype.draw = function( context, camera, isCursor, cursor ) {
-      if (this.sprites[this.currentSprite]) {
-        this.sprites[this.currentSprite].draw(context, this.vector, camera, isCursor, cursor);
-        this.sprites[this.currentSprite].next();
+      if (this.sprites[this.innerState.currentSprite]) {
+        this.sprites[this.innerState.currentSprite].draw(context, this.vector, camera, isCursor, cursor);
+        this.sprites[this.innerState.currentSprite].next();
       }
     }
 
@@ -335,7 +353,7 @@
      * @param {Boolean} static - image is unchanged by camera position
      * @param {Integer} altitude - identify camera object translation according to camera (Outlook)
      */
-    function Sprite(source, w, h, duration, firstFrame, animationLength, bounce, static, altitude) {
+    function Sprite( source, w, h, duration, firstFrame, animationLength, bounce, static, altitude ) {
       this.source               = source;
       this.w                    = w;
       this.h                    = h;
@@ -381,7 +399,8 @@
      * @param  {Boolean} isCursor - is cursor identificator 
      * @param  {Cursor}  cursor - reference to cursor object
      */
-    Sprite.prototype.draw = function(ctx, vector, camera, isCursor, cursor) {
+    Sprite.prototype.draw = function( ctx, vector, camera, isCursor, cursor ) {
+      ctx.save();
       var self = this;
       if (!self.source) return;
       var dx = 0, dy = 0;
@@ -429,6 +448,7 @@
         self.h
       ); 
       
+      ctx.restore(); 
     }
 
     return Sprite;
@@ -586,7 +606,7 @@
 
     /**
      * Adding new record for media object to storage or in folder if folder is fpecified
-     * Record contains Image object and array of indexes. By that indexes can be finded game objects in world list
+     * Record contains Image object and array of references. By that references can be finded game objects from world list
      * (it is needed for memory releasing)
      * @param  {String} key - key in storage or in folder
      * @param  {String} src - source location
@@ -613,7 +633,7 @@
     /**
      * Removing media objects from storage or from folder by key. If storage contains folder with specified key, 
      * all records from folder will be deleted. Removing occurs by pass through array of indexes and invoking
-     * 'removeSprite' method in game object with this index
+     * 'removeSprite' method from game object
      * @param  {String} key - key in storage
      * @param  {String} folder - folder name in storage
      * @return {String}
@@ -621,7 +641,9 @@
     MediaStorage.prototype.remove = function( key, folder ) {
       if (folder) {
         for (var i = 0; i < this.storage[folder][key].references.length; i++) {
-          this.game.world[this.storage[folder][key].references[i]].removeSprite(key);
+          if (this.storage[folder][key].references[i]) {
+            this.storage[folder][key].references[i].removeSprite(key);
+          }
         }
         this.storage[folder][key] = undefined;
       } else {
@@ -631,7 +653,9 @@
           }
         } else {
           for (var i = 0; i < this.storage[key].references.length; i++) {
-            this.game.world[this.storage[key].references[i]].removeSprite(key);
+            if (this.storage[key].references[i]) {
+              this.storage[key].references[i].removeSprite(key);
+            }
           }
         }
         this.storage[key] = undefined;
@@ -651,18 +675,18 @@
 
     /**
      * Geting image object from storage or from floder by key
-     * @param  {String}  key - key in storage
-     * @param  {Integer} gameObjectIndex - index of game object in world list
-     * @param  {String}  folder - folder name in storage
+     * @param  {String}     key - key in storage
+     * @param  {GameObject} gameObjectReference - reference to game object in world list
+     * @param  {String}     folder - folder name in storage
      * @return {Image}
      */
-    MediaStorage.prototype.get = function( key, gameObjectIndex, folder ) {
+    MediaStorage.prototype.get = function( key, gameObjectReference, folder ) {
       if (folder) {
         this.storage[folder][key].references.push(gameObjectIndex);
         return this.storage[folder][key].item;
       } else {
         if (this.storage[key].references) {
-          this.storage[key].references.push(gameObjectIndex);
+          this.storage[key].references.push(gameObjectReference);
           return this.storage[key].item;
         }
       }
