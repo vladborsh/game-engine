@@ -274,8 +274,8 @@
     
     /**
      * Contructor
-     * @param {Integer} width of canvas
-     * @param {Integer} height of canvas
+     * @param {Integer} w - width of canvas
+     * @param {Integer} h -height of canvas
      */
     function Game( w, h ) {
       this.mediaStorage  = new MediaStorage(this);
@@ -320,7 +320,7 @@
 
     /**
      * Add new game object in the beggining of game world array. Object that has beeing added later will be drawn below
-     * @param {GameObject} new game object
+     * @param {GameObject} obj - reference to new game object
      */
     Game.prototype.addObject = function( obj ) {
       this.world.unshift(obj);
@@ -339,7 +339,7 @@
 
     /**
      * Set camera object and pass screen object to them
-     * @param {Camera} camera object
+     * @param {Camera} camera - reference to camera object
      */
     Game.prototype.setCamera = function( camera ) {
       this.camera = camera;
@@ -348,7 +348,7 @@
 
     /**
      * Set cursor object. It is desirable invoke this function before adding all other game objects
-     * @param {Sprite} cursor sprite object
+     * @param {Sprite} sprite - reference to cursor sprite
      */
     Game.prototype.addCursorGameObject = function( sprite ) {
       var self = this;
@@ -366,7 +366,7 @@
 
     /* Private functions */
 
-    function setupIcon(argument) {
+    function setupIcon( argument ) {
       var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
       link.type = 'image/x-icon';
       link.rel = 'shortcut icon';
@@ -386,7 +386,7 @@
     /**
      * Contructor set listeners
      */
-    function GameState(  ) {
+    function GameState() {
       var self = this;
       this.top = false;
       this.left = false;
@@ -438,8 +438,8 @@
 
     /**
      * Constructor
-     * @param {Integer} width
-     * @param {Integer} height
+     * @param {Integer} w - width
+     * @param {Integer} h - height
      */
     function Screen( w, h ) {
       this.w       = w;
@@ -459,9 +459,9 @@
     
     /**
      * Constructor
-     * @param {Integer} x position
-     * @param {Integer} y position
-     * @param {Canvas} reference to canvas
+     * @param {Integer} x - position
+     * @param {Integer} y - position
+     * @param {Canvas}  canvas - reference to canvas object
      */
     function Cursor(x, y, canvas) {
       this.vector = new a.Vector(x, y);
@@ -486,7 +486,8 @@
     }
 
     /**
-     * Return current cursor object position
+     * Obtains current cursor object position
+     * @return {Vector}
      */
     Cursor.prototype.getPosition = function() {
       return this.vector;
@@ -504,12 +505,12 @@
 
     /**
      * Constructor
-     * @param {Integer} x position
-     * @param {Integer} y position
-     * @param {Function} conversion function, should accept vector, game state, controller
-     * @param {GameState} reference to current game state (that stores in main object)
-     * @param {Sprite} sprite object
-     * @param {Controller} controller object
+     * @param {Integer}    x - position
+     * @param {Integer}    y - position
+     * @param {Function}   conversion - function that should accept vector, game state, controller
+     * @param {GameState}  gameState - reference to current game state (that stores in main object)
+     * @param {Sprite}     sprite - reference for sprite object
+     * @param {Controller} controller - controller object
      */
     function GameObject( x, y, conversion, gameState, sprite, controller ) {
       this.vector        = new a.Vector(x, y);
@@ -530,10 +531,10 @@
 
     /**
      * If sprite is setted call draw function from them, call next frame in sprite object
-     * @param  {Context} reference to context object
-     * @param  {Camera} reference to camera object
-     * @param  {Boolean} identification that it is cursor object
-     * @param  {Cursor} reference to cursor objject
+     * @param  {Context} context -  reference to context object
+     * @param  {Camera}  camera - reference to camera object
+     * @param  {Boolean} isCursor - identification that it is cursor object
+     * @param  {Cursor}  cursor - reference to cursor objject
      */
     GameObject.prototype.draw = function( context, camera, isCursor, cursor ) {
       if (this.sprites[this.currentSprite]) {
@@ -554,11 +555,11 @@
 
     /**
      * Constructor
-     * @param {Integer} x position
-     * @param {Integer} y position
-     * @param {Function} conversion function, should accept vector, game state, controller
-     * @param {GameState} referrence to current game state (that stores in main object)
-     * @param {Controller} controller object
+     * @param {Integer}    x - position
+     * @param {Integer}    y - position
+     * @param {Function}   conversion - function that should accept vector, game state, controller
+     * @param {GameState}  gameState - referrence to current game state (that stores in main object)
+     * @param {Controller} controller -reference to controller object
      */
     function Camera( x, y, conversion, gameState, controller ) {
       this.vector     = new a.Vector(x, y);
@@ -587,15 +588,15 @@
 
     /**
      * Constructor
-     * @param {String} texture file destination
-     * @param {Integer} width
-     * @param {Integer} height
-     * @param {Integer} duration in millisecons
-     * @param {Integer} first frame index  
-     * @param {Integer} amounf of frame in sprite
-     * @param {Boolean} identificates that animation will reversed if current frame reach the limits
-     * @param {Boolean} image is unchanged by camera position
-     * @param {Integer} altitude identify camera object translation according to camera (Outlook)
+     * @param {String}  source - texture file destination
+     * @param {Integer} w- width
+     * @param {Integer} h -height
+     * @param {Integer} duration - duration in millisecons
+     * @param {Integer} firstFrame - first frame index  
+     * @param {Integer} animationLength - frames amount in sprite
+     * @param {Boolean} bounce - identificates that animation will reversed if current frame reach the limits
+     * @param {Boolean} static - image is unchanged by camera position
+     * @param {Integer} altitude - identify camera object translation according to camera (Outlook)
      */
     function Sprite(source, w, h, duration, firstFrame, animationLength, bounce, static, altitude) {
       this.source               = source;
@@ -637,11 +638,11 @@
 
     /**
      * Draw current frame in according to current object position, current camera position
-     * @param  {Context} reference to context object
-     * @param  {Vector}  vector object (stores in parent game object)
-     * @param  {Camera}  camera object (from main game object)
-     * @param  {Boolean} is cursor identificator 
-     * @param  {Cursor} reference to cursor object
+     * @param  {Context} ctx - reference to context object
+     * @param  {Vector}  vector - referense to vector object (stores in parent game object)
+     * @param  {Camera}  camera - reference to camera object (from main game object)
+     * @param  {Boolean} isCursor - is cursor identificator 
+     * @param  {Cursor}  cursor - reference to cursor object
      */
     Sprite.prototype.draw = function(ctx, vector, camera, isCursor, cursor) {
       var self = this;
@@ -704,13 +705,13 @@
 
     /**
      * Constructor
-     * @param {Vector} velocity
-     * @param {Vector} acceleration
-     * @param {GameState} current game state
-     * @param {Integer} acceleration boost if game state is triggered
-     * @param {Integer} max velocity
-     * @param {Integer} slip coefficient
-     * @param {Vector} vector of linked object [optional]
+     * @param {Vector}    v - reference to velocity vector
+     * @param {Vector}    a - reference to acceleration vector
+     * @param {GameState} state - reference to current game state object
+     * @param {Integer}   accelerationBoost - acceleration boost value (per one game cycle iteration)
+     * @param {Integer}   maxVelocity - max velocity value
+     * @param {Integer}   slipCoefficient - slip coefficient
+     * @param {Vector}    linkedVec - reference to vector of linked object
      */
     function Controller(v, a, state, accelerationBoost, maxVelocity, slipCoefficient, linkedVec) {
       this.velocity          = v;
@@ -839,7 +840,7 @@
     
     /**
      * Constructor
-     * @param {Game} reference to Game object
+     * @param {Game} game - reference to Game object
      */
     function MediaStorage( game ) {
       this.game = game;
@@ -850,9 +851,9 @@
      * Adding new record for media object to storage or in folder if folder is fpecified
      * Record contains Image object and array of indexes. By that indexes can be finded game objects in world list
      * (it is needed for memory releasing)
-     * @param {String} key in storage or in folder
-     * @param {String} source location
-     * @param {String} folder name
+     * @param  {String} key - key in storage or in folder
+     * @param  {String} src - source location
+     * @param  {String} folder - folder name
      * @return {String}
      */
     MediaStorage.prototype.add = function( key, src, folder ) {
@@ -876,8 +877,8 @@
      * Removing media objects from storage or from folder by key. If storage contains folder with specified key, 
      * all records from folder will be deleted. Removing occurs by pass through array of indexes and invoking
      * 'removeSprite' method in game object with this index
-     * @param  {String} key in storage
-     * @param  {String} folder name in storage
+     * @param  {String} key - key in storage
+     * @param  {String} folder - folder name in storage
      * @return {String}
      */
     MediaStorage.prototype.remove = function( key, folder ) {
@@ -913,9 +914,9 @@
 
     /**
      * Geting image object from storage or from floder by key
-     * @param  {String} key in storage
-     * @param  {Integer} index of game object in world list
-     * @param  {String} folder name in storage
+     * @param  {String}  key - key in storage
+     * @param  {Integer} gameObjectIndex - index of game object in world list
+     * @param  {String}  folder - folder name in storage
      * @return {Image}
      */
     MediaStorage.prototype.get = function( key, gameObjectIndex, folder ) {
