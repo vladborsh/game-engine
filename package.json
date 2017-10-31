@@ -9,6 +9,9 @@
   "author": "Vlad Borsh",
   "license": "ISC",
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
     "browser-sync": "^2.18.8",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
@@ -19,7 +22,8 @@
     "karma": "^1.6.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-firefox-launcher": "^1.0.1",
-    "karma-jasmine": "^1.1.0"
+    "karma-jasmine": "^1.1.0",
+    "webpack": "^3.8.1"
   },
   "repository": {
     "type": "git",
