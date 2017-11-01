@@ -7,4 +7,4 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 before_script:
   - npm install && npm install -g gulp
-script: gulp && npm test
+script: webpack && npm test
