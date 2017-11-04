@@ -14,7 +14,7 @@ class Camera {
    * @param {Controller} controller -reference to controller object
    */
   constructor( x, y, conversion, gameState, controller ) {
-    this.vector     = new Vector(x, y);
+    this.position     = new Vector(x, y);
     this.conversion = conversion || (function(vector) { vector.translate(0, 0); });
     this.gameState  = gameState;
     this.controller = controller;

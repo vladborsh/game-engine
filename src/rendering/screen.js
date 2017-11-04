@@ -6,8 +6,7 @@ import Vector from '../algebra/vector'
 class Screen {
 
   constructor( w, h ) {
-    this.w       = w;
-    this.h       = h;
+    this.size = new Vector( w, h );
     this.center = new Vector( Math.round(w/2), Math.round(h/2) );
   }
 
